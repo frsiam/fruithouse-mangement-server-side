@@ -21,10 +21,13 @@ async function run() {
         await client.connect();
         const fruitCollection = client.db("fruitExpress").collection("fruit");
 
-
-        // Data received from UI and send to UI
-        app.get('/fruit', (req, res) => {
-            res.send('from new db')
+        // Add new Item / Insert item
+        // Data received for store database from UI and send to UI
+        app.post('/fruit', async (req, res) => {
+            const newfruit = req.body;
+            console.log('from client side', newfruit);
+            const result = await fruitCollection.insertOne(newfruit);
+            res.send(result);
         })
     }
     finally {
