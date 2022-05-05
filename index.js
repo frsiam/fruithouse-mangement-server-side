@@ -29,6 +29,14 @@ async function run() {
             const result = await fruitCollection.insertOne(newfruit);
             res.send(result);
         })
+
+        // Find or Get All item from database
+        app.get('/fruits', async (req, res) => {
+            const query = {};
+            const cursor = fruitCollection.find(query);
+            const fruits = await cursor.toArray();
+            res.send(fruits);
+        })
     }
     finally {
         // await client.close();
