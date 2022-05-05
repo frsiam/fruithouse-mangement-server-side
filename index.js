@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 
@@ -37,6 +37,14 @@ async function run() {
             const fruits = await cursor.toArray();
             res.send(fruits);
         })
+
+        //Delete a user
+        app.delete('/fruit/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await fruitCollection.deleteOne(query);
+            res.send(result);
+        })
     }
     finally {
         // await client.close();
@@ -45,11 +53,9 @@ async function run() {
 
 run().catch(console.dir)
 
-
 app.get('/', (req, res) => {
     res.send('Hello....Assalamualaikum')
 })
-
 
 app.listen(port, () => {
     console.log('listening from', port)
