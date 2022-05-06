@@ -25,17 +25,37 @@ async function run() {
         // Data received for store database from UI and send to UI
         app.post('/fruit', async (req, res) => {
             const newfruit = req.body;
-            console.log('from client side', newfruit);
             const result = await fruitCollection.insertOne(newfruit);
             res.send(result);
         })
 
-        // Find or Get All item from database
+        // Find all item or Get All item from database
         app.get('/fruits', async (req, res) => {
             const query = {};
             const cursor = fruitCollection.find(query);
             const fruits = await cursor.toArray();
             res.send(fruits);
+        })
+
+        // Find a item or Get a item from database
+        app.get('/fruit/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await fruitCollection.findOne(query);
+            res.send(result);
+        })
+
+        //Update Item Quantity
+        app.put('/fruit/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedUser = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: updatedUser,
+            };
+            const result = await fruitCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         //Delete a user
