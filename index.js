@@ -37,6 +37,25 @@ async function run() {
             res.send(fruits);
         })
 
+        // My Items api
+        app.get('/myitems', async (req, res) => {
+            // const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            // if (email === decodedEmail) {
+            //     const query = { email: email };
+            //     const cursor = fruitCollection.find(query);
+            //     const orders = await cursor.toArray()
+            //     res.send(orders)
+            // }
+            const query = { email: email };
+            const cursor = fruitCollection.find(query);
+            const myitems = await cursor.toArray();
+            res.send(myitems);
+            // else {
+            //     res.status(403).send({ message: 'Forbidden access' });
+            // }
+        })
+
         // Find a item or Get a item from database
         app.get('/fruit/:id', async (req, res) => {
             const id = req.params.id;
