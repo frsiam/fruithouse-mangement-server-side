@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 require('dotenv').config()
 
@@ -11,6 +12,21 @@ const port = process.env.PORT || 4000;
 app.use(cors())
 app.use(express.json())
 
+function verifyToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ meassase: 'Unauthorized Access' })
+    }
+    const myToken = authHeader.split(' ')[1];
+    jwt.verify(myToken, process.env.SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden Access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ihinm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 
@@ -20,6 +36,15 @@ async function run() {
     try {
         await client.connect();
         const fruitCollection = client.db("fruitExpress").collection("fruit");
+
+        //AUTH
+        app.post('/login', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.SECRET_TOKEN, {
+                expiresIn: '1d'
+            });
+            res.send(token);
+        })
 
         // Add new Item / Insert item
         // Data received for store database from UI and send to UI
@@ -38,22 +63,18 @@ async function run() {
         })
 
         // My Items api
-        app.get('/myitems', async (req, res) => {
-            // const decodedEmail = req.decoded.email;
+        app.get('/myitems', verifyToken, async (req, res) => {
+            const decodedEmail = req.decoded.email;
             const email = req.query.email;
-            // if (email === decodedEmail) {
-            //     const query = { email: email };
-            //     const cursor = fruitCollection.find(query);
-            //     const orders = await cursor.toArray()
-            //     res.send(orders)
-            // }
-            const query = { email: email };
-            const cursor = fruitCollection.find(query);
-            const myitems = await cursor.toArray();
-            res.send(myitems);
-            // else {
-            //     res.status(403).send({ message: 'Forbidden access' });
-            // }
+            if (email === decodedEmail) {
+                const query = { email: email };
+                const cursor = fruitCollection.find(query);
+                const myitems = await cursor.toArray();
+                res.send(myitems);
+            }
+            else {
+                res.status(403).send({ message: 'Forbidden access' });
+            }
         })
 
         // Find a item or Get a item from database
